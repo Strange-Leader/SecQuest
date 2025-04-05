@@ -1,0 +1,120 @@
+CTF Challenge Walkthrough
+=======================
+
+Challenge 1: SQL Injection
+--------------------------
+1. The vulnerability is in the search functionality
+2. The server doesn't properly sanitize SQL queries
+3. Exploit:
+   - Enter this in the search box: ' OR '1'='1
+   - This will bypass the authentication and show all records
+   - Flag: CTF{SQL_INJECTION_SUCCESS}
+
+Challenge 2: Admin Access
+------------------------
+1. The vulnerability is in the token validation
+2. The server uses a weak token generation method
+3. Exploit:
+   - Get a valid token by logging in
+   - Modify the token by changing the role to "admin"
+   - Send the modified token to /admin/access
+   - Flag: CTF{ADMIN_ACCESS_SUCCESS}
+
+Challenge 3: Log Injection
+-------------------------
+1. The vulnerability is in the log validation
+2. The system only checks the first line for "OFF"
+3. Exploit:
+   - Enter this in the log input: System status: OK\nOFF
+   - The \n escape sequence creates a new line
+   - The validation only checks the first line
+   - Flag: CTF{LOG_INJECTION_SUCCESS}
+
+Challenge 4: License Bypass
+-------------------------
+1. The vulnerability is in the license validation
+2. The server uses a simple signature check
+3. Exploit:
+   Method 1 - Purchase License:
+   - Send POST to /api/challenge6/purchase-license
+   - Body: {"paymentId": "any_value", "amount": 9.99}
+   
+   Method 2 - Direct File Modification:
+   - Modify license.json to contain:
+     {
+       "signature": "valid_signature",
+       "expiresAt": "2025-01-01T00:00:00.000Z"
+     }
+   - Flag: CTF{LICENSE_BYPASS_SUCCESS}
+
+Challenge 5: TLS Bypass
+---------------------
+1. The vulnerability is in the token generation
+2. Tokens are weakly generated with predictable components
+3. Exploit:
+   a. Get initial token:
+      - Login with valid credentials
+      - Get base64 encoded token
+   
+   b. Create new token:
+      - Decode token: Buffer.from(token, 'base64').toString()
+      - Format: userId:timestamp:weak_secret_key
+      - Replace timestamp with future time
+      - Re-encode: Buffer.from(newToken).toString('base64')
+   
+   c. Use new token:
+      - Send GET to /api/challenge5/profile
+      - Header: Authorization: Bearer <new_token>
+   - Flag: CTF{TLS_BYPASS_SUCCESS}
+
+Challenge 6: AI Model Exploit
+---------------------------
+1. The vulnerability is in the model data exposure
+2. Model parameters are stored in the app binary
+3. Exploit:
+   - Access /api/challenge7/model-info
+   - Look for base64 encoded data in the response
+   - Decode the model parameters
+   - Flag: CTF{AI_MODEL_EXPLOIT_SUCCESS}
+
+Challenge 7: Local Storage
+------------------------
+1. The vulnerability is in the SQLite database
+2. Profile data is weakly encrypted
+3. Exploit:
+   - Access /api/challenge8/get-profile
+   - The data is base64 encoded
+   - Decode the profile data
+   - Flag: CTF{LOCAL_STORAGE_SUCCESS}
+
+Challenge 8: Crypto Implementation
+-------------------------------
+1. The vulnerability is in the encryption method
+2. Server uses AES-ECB with static key
+3. Exploit:
+   - Use /api/challenge9/encrypt endpoint
+   - The encryption uses weak key: 'weak_encryption_key_123'
+   - Decrypt using the same key
+   - Flag: CTF{CRYPTO_IMPLEMENTATION_SUCCESS}
+
+General Tips:
+------------
+1. Always check the response headers for hints
+2. Look for base64 encoded data
+3. Check for weak validation in input fields
+4. Monitor network requests for patterns
+5. Look for exposed sensitive data in responses
+
+Tools Needed:
+------------
+1. Base64 decoder
+2. Network proxy (like Burp Suite)
+3. SQL injection testing tools
+4. Crypto analysis tools
+
+Remember:
+--------
+- These challenges are designed for learning purposes
+- The vulnerabilities are intentionally weak
+- In real applications, these would be serious security issues
+- Always practice responsible disclosure 

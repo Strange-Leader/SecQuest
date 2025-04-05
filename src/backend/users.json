@@ -1,0 +1,26 @@
+{
+  "admin": {
+    "password": "$2a$08$vrBHiDFfwlnBwbcYQGsBPecVtRITGKomKtyPzXIz82v6O0Nruq7n6",
+    "id": 1,
+    "role": "admin",
+    "email": "admin@example.com",
+    "apiKey": "admin-key-123",
+    "premium": true
+  },
+  "user": {
+    "password": "$2a$08$T6r06i5gmS/gdUfKeFSPJe.aS8ZEszjRhO/WmSGxniSSia2kJ1sCa",
+    "id": 2,
+    "role": "user",
+    "email": "user@example.com",
+    "apiKey": "user-key-456",
+    "premium": false
+  },
+  "premium": {
+    "password": "$2a$08$JBdfWl42JBpXviPZogxLXOorlaTwxpCVrkm2lKXuCZ6LdULQ8wRHG",
+    "id": 3,
+    "role": "user",
+    "email": "premium@example.com",
+    "apiKey": "premium-key-789",
+    "premium": true
+  }
+}

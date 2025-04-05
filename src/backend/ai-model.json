@@ -1,0 +1,16 @@
+{
+  "name": "CTF-GPT",
+  "version": "1.0.0",
+  "endpoint": "/api/challenge7/process-query",
+  "accessToken": "model-access-token-123",
+  "capabilities": [
+    "text-generation",
+    "code-completion",
+    "vulnerability-detection"
+  ],
+  "securityMeasures": {
+    "rateLimit": "100 requests/hour",
+    "authentication": "Bearer token",
+    "inputValidation": "Basic sanitization"
+  }
+}

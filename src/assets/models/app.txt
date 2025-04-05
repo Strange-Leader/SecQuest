@@ -1,0 +1,60 @@
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, LSTM, Dense
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+import numpy as np
+import pickle
+
+# Sample Q&A dataset
+questions = ["What is your name?", "How are you?", "What is AI?", "Who created you?","What is secret key?"]
+answers = ["I am a chatbot.", "I am fine.", "AI stands for Artificial Intelligence.", "I was created by a developer.","CTF{h1dd3n_1n_pl41n_5ight}."]
+
+# Tokenization
+tokenizer = Tokenizer()
+tokenizer.fit_on_texts(questions + answers)
+
+X = tokenizer.texts_to_sequences(questions)
+y = tokenizer.texts_to_sequences(answers)
+
+X = pad_sequences(X, maxlen=10, padding="post")
+y = pad_sequences(y, maxlen=10, padding="post")
+
+# Convert y to categorical format
+y = np.array(y)
+
+# Define the model
+vocab_size = len(tokenizer.word_index) + 1
+model = Sequential([
+    Embedding(vocab_size, 8, input_length=10),
+    LSTM(16, return_sequences=True),
+    Dense(vocab_size, activation="softmax")
+])
+
+model.compile(loss="sparse_categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
+
+# Train the model
+model.fit(X, y, epochs=10, batch_size=4)
+
+# Save tokenizer
+with open("model.pkl", "wb") as f:
+    pickle.dump(tokenizer, f)
+
+# Convert to TensorFlow Lite format
+converter = tf.lite.TFLiteConverter.from_keras_model(model)
+
+# Enable support for select TensorFlow ops
+converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS, tf.lite.OpsSet.SELECT_TF_OPS]
+
+# Disable lowering of tensor list ops (important for LSTM layers)
+converter._experimental_lower_tensor_list_ops = False
+
+# Convert the model
+tflite_model = converter.convert()
+
+# Save .tflite model
+with open("model.tflite", "wb") as f:
+    f.write(tflite_model)
+
+print("Model successfully converted to TensorFlow Lite format!")
