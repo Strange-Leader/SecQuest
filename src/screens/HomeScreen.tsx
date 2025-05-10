@@ -10,6 +10,7 @@ import {
 import ErrorBoundary from '../components/ErrorBoundary';
 import LoadingSpinner from '../components/LoadingSpinner';
 import {HomeScreenProps} from '../types/navigation';
+import ConnectionTest from '../components/ConnectionTest';
 
 const challenges = [
   {
@@ -80,6 +81,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
       <View style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <Text style={styles.title}>Select A CTF Challenge</Text>
+          
+          <View style={styles.connectionTestContainer}>
+            <ConnectionTest />
+          </View>
+
           {challenges.map((challenge, index) => (
             <TouchableOpacity
               key={index}
@@ -110,8 +116,23 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 40,
+    marginBottom: 20,
     textAlign: 'center',
+  },
+  connectionTestContainer: {
+    width: '100%',
+    marginBottom: 30,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 15,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   button: {
     backgroundColor: '#4CAF50',

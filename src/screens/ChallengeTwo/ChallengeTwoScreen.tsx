@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {View, Text, TouchableOpacity, StyleSheet, Alert} from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet, Alert, TextInput} from 'react-native';
 import {ChallengeTwoScreenProps} from '../../types/navigation';
 import ErrorBoundary from '../../components/ErrorBoundary';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -9,40 +9,34 @@ const ChallengeTwoScreen: React.FC<ChallengeTwoScreenProps> = ({
   navigation,
 }) => {
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const handleAdminAccess = async () => {
-    try {
-      setLoading(true);
-      const response = await api.post(
-        '/api/challenge2/admin/access',
-        {
-          token: 'user-token',
-        },
-        {
-          headers: {
-            'X-Admin-Token': 'true',
-            'X-User-Role': 'admin',
+  // Hidden admin access function - not visible in UI
+  const checkAdminAccess = async (query: string) => {
+    if (query.toLowerCase() === 'admin') {
+      try {
+        setLoading(true);
+        const response = await api.post(
+          '/api/challenge2/admin/access',
+          {
+            token: 'user-token',
           },
-        },
-      );
-
-      if (response.data.success) {
-        navigation.navigate('AdminPanel');
-      } else {
-        Alert.alert(
-          'Access Denied',
-          'You are not authorized! Try to find a way to bypass the authorization.',
+          {
+            headers: {
+              'X-Admin-Token': 'true',
+              'X-User-Role': 'admin',
+            },
+          },
         );
+
+        if (response.data.success) {
+          navigation.navigate('AdminPanel');
+        }
+      } catch (error: any) {
+        console.error('Admin access error:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error: any) {
-      console.error('Admin access error:', error);
-      Alert.alert(
-        'Error',
-        error.message ||
-          'Failed to access admin panel. The system might have weak authorization checks.',
-      );
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -51,20 +45,22 @@ const ChallengeTwoScreen: React.FC<ChallengeTwoScreenProps> = ({
       <View style={styles.container}>
         <Text style={styles.title}>User Dashboard</Text>
         <Text style={styles.description}>
-          Try to access the admin panel. The system has weak authorization
-          checks.
+          Welcome to the user dashboard. Use the search feature to find what you need.
         </Text>
 
-        <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleAdminAccess}
-          disabled={loading}>
-          {loading ? (
-            <LoadingSpinner size="small" />
-          ) : (
-            <Text style={styles.buttonText}>Access Admin Settings</Text>
-          )}
-        </TouchableOpacity>
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search..."
+            value={searchQuery}
+            onChangeText={(text) => {
+              setSearchQuery(text);
+              checkAdminAccess(text);
+            }}
+          />
+        </View>
+
+        {loading && <LoadingSpinner size="small" />}
       </View>
     </ErrorBoundary>
   );
@@ -91,20 +87,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     paddingHorizontal: 20,
   },
-  button: {
-    backgroundColor: '#4CAF50',
+  searchContainer: {
+    width: '100%',
+    marginBottom: 20,
+  },
+  searchInput: {
+    backgroundColor: '#fff',
     padding: 15,
     borderRadius: 8,
-    width: '100%',
-    alignItems: 'center',
-  },
-  buttonDisabled: {
-    backgroundColor: '#cccccc',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    borderWidth: 1,
+    borderColor: '#ddd',
   },
 });
 

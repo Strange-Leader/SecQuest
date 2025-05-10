@@ -62,6 +62,16 @@ app.use(
 // Create HTTP server instead of HTTPS
 const server = http.createServer(app);
 
+// Test endpoint for connectivity
+app.get('/test', (req, res) => {
+  res.json({
+    message: 'Server is reachable!',
+    timestamp: new Date().toISOString(),
+    clientIP: req.ip,
+    headers: req.headers
+  });
+});
+
 // Rate limiting for CTF challenges
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -567,6 +577,34 @@ app.post('/api/challenge9/decrypt', (req, res) => {
       hint: 'Make sure the data is properly base64 encoded and encrypted with the correct key',
     });
   }
+});
+
+// Challenge 4 - 2FA Bypass endpoints
+app.post('/api/challenge4/login', (req, res) => {
+  const { username, password } = req.body;
+  // For demo, accept any username/password
+  if (username && password) {
+    // Simulate issuing a token (insecure, for CTF)
+    const token = Buffer.from(`${username}:authtoken`).toString('base64');
+    res.json({ success: true, token, message: 'Login successful (Challenge 4)!' });
+  } else {
+    res.status(400).json({ error: 'Username and password required' });
+  }
+});
+
+app.post('/api/challenge4/verify-2fa', (req, res) => {
+  const { code } = req.body;
+  // For demo, accept any code
+  if (code) {
+    res.json({ success: true, message: '2FA verified (Challenge 4)!' });
+  } else {
+    res.status(400).json({ error: '2FA code required' });
+  }
+});
+
+app.get('/api/challenge4/flag', (req, res) => {
+  // For demo, return a static flag
+  res.json({ flag: 'CTF{CHALLENGE4_2FA_BYPASS}' });
 });
 
 // Global error handling middleware

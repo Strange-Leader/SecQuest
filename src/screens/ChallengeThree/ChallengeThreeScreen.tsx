@@ -11,6 +11,7 @@ import {
 import {ChallengeThreeProps} from '../../types/navigation';
 import ErrorBoundary from '../../components/ErrorBoundary';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import {ENCRYPTED_FLAGS, decryptFlag} from '../../utils/encryption';
 
 interface Log {
   timestamp: string;
@@ -18,7 +19,7 @@ interface Log {
   message: string;
 }
 
-const FLAG_TEXT = '🎉 FLAG{Log_Injection_1337}';
+const FLAG_TEXT = decryptFlag(ENCRYPTED_FLAGS.CHALLENGE_THREE);
 
 const ChallengeThreeScreen: React.FC<ChallengeThreeProps> = ({navigation}) => {
   const [input, setInput] = useState('');

@@ -1,17 +1,23 @@
 import React from 'react';
-import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import {View, Text, StyleSheet} from 'react-native';
 import {AdminPanelScreenProps} from '../../types/navigation';
 import ErrorBoundary from '../../components/ErrorBoundary';
+import {ENCRYPTED_FLAGS, decryptFlag} from '../../utils/encryption';
 
-const AdminPanelScreen: React.FC<AdminPanelScreenProps> = ({navigation}) => {
+const AdminPanelScreen: React.FC<AdminPanelScreenProps> = () => {
+  const flag = decryptFlag(ENCRYPTED_FLAGS.CHALLENGE_TWO);
+
   return (
     <ErrorBoundary>
       <View style={styles.container}>
         <Text style={styles.title}>Admin Panel</Text>
         <Text style={styles.description}>
-          Congratulations! You've successfully gained admin access.
+          Welcome to the admin panel. This area should be restricted to admin users only.
         </Text>
-        <Text style={styles.flag}>🎉 FLAG{Admin_Access_Granted_1337}</Text>
+        <Text style={styles.flag}>{flag}</Text>
+        <Text style={styles.hint}>
+          Hint: The system trusts client-side headers for authorization.
+        </Text>
       </View>
     </ErrorBoundary>
   );
@@ -42,6 +48,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#4CAF50',
     textAlign: 'center',
+    marginBottom: 20,
+  },
+  hint: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
 });
 

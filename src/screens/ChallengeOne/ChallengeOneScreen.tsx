@@ -11,6 +11,7 @@ import { ChallengeOneProps } from '../../types/navigation';
 import ErrorBoundary from '../../components/ErrorBoundary';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import axios from 'axios';
+import { ENCRYPTED_FLAGS, decryptFlag } from '../../utils/encryption';
 
 // Use your actual IP address
 const API_BASE_URL = 'https://10.15.7.160:3000';
@@ -52,7 +53,7 @@ const ChallengeOneScreen: React.FC<ChallengeOneProps> = ({ navigation }) => {
     // Check for hardcoded credentials
     if (username === hiddenUsername && password === hiddenPassword) {
       navigation.navigate('Flag', {
-        flag: 'CTF{Hardcoded_Credentials_Bypassed}', // Hidden flag
+        flag: decryptFlag(ENCRYPTED_FLAGS.CHALLENGE_ONE),
       });
       return;
     }
@@ -75,7 +76,7 @@ const ChallengeOneScreen: React.FC<ChallengeOneProps> = ({ navigation }) => {
 
       if (response.data.success) {
         navigation.navigate('Flag', {
-          flag: response.data.flag,
+          flag: decryptFlag(ENCRYPTED_FLAGS.CHALLENGE_ONE),
         });
       } else {
         Alert.alert(
