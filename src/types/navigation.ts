@@ -13,7 +13,7 @@ export type RootStackParamList = {
   ChallengeEight: undefined;
   ChallengeNine: undefined;
   Flag: { flag: string };
-  AdminPanel: undefined;
+  AdminPanel: { flag: string };
 };
 
 export interface Challenge {

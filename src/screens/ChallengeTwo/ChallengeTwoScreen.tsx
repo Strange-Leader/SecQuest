@@ -1,42 +1,101 @@
 import React, {useState} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, Alert, TextInput} from 'react-native';
-import {ChallengeTwoScreenProps} from '../../types/navigation';
+import {ChallengeTwoProps} from '../../types/navigation';
 import ErrorBoundary from '../../components/ErrorBoundary';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import api from '../../config/api';
+import axios from 'axios';
 
-const ChallengeTwoScreen: React.FC<ChallengeTwoScreenProps> = ({
+const ChallengeTwoScreen: React.FC<ChallengeTwoProps> = ({
   navigation,
 }) => {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [error, setError] = useState('');
 
-  // Hidden admin access function - not visible in UI
-  const checkAdminAccess = async (query: string) => {
-    if (query.toLowerCase() === 'admin') {
+  const handleSearch = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      // First check if we can reach the server using the test endpoint
       try {
-        setLoading(true);
-        const response = await api.post(
-          '/api/challenge2/admin/access',
-          {
-            token: 'user-token',
+        console.log('Checking server connection...');
+        const testCheck = await axios.get('http://192.168.199.54:3000/test', {
+          headers: {
+            'Accept': 'application/json, text/plain, */*',
+            'Content-Type': 'application/json',
+            'Connection': 'keep-alive'
           },
-          {
-            headers: {
-              'X-Admin-Token': 'true',
-              'X-User-Role': 'admin',
-            },
-          },
-        );
-
-        if (response.data.success) {
-          navigation.navigate('AdminPanel');
+          timeout: 15000,
+          validateStatus: (status) => status >= 200 && status < 500
+        });
+        
+        console.log('Server test response:', testCheck.data);
+        if (!testCheck.data.message.includes('reachable')) {
+          throw new Error('Server is not reachable');
         }
       } catch (error: any) {
-        console.error('Admin access error:', error);
-      } finally {
+        console.error('Server connection check failed:', error);
+        setError('Cannot connect to server. Please check your network connection.');
         setLoading(false);
+        return;
       }
+
+      // Make the search request
+      console.log('Making search request...');
+      const response = await axios.post(
+        'http://192.168.199.54:3000/api/challenge2/admin/access',
+        {
+          token: 'user-token',
+          query: searchQuery
+        },
+        {
+          headers: {
+            'Accept': 'application/json, text/plain, */*',
+            'Content-Type': 'application/json',
+            'Connection': 'keep-alive'
+          },
+          timeout: 15000,
+          validateStatus: (status) => status >= 200 && status < 500
+        },
+      );
+
+      console.log('Search response:', response.data);
+      
+      if (response.data.success) {
+        Alert.alert(
+          'Success!',
+          `Flag: ${response.data.flag}\n\nHint: ${response.data.hint}`,
+          [
+            {
+              text: 'OK',
+              onPress: () => navigation.navigate('AdminPanel', { flag: response.data.flag })
+            }
+          ]
+        );
+      } else {
+        // For unsuccessful searches, show a generic message
+        Alert.alert(
+          'Search Results',
+          'No results found. Try searching for something else.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error: any) {
+      console.error('Search error details:', {
+        message: error.message,
+        code: error.code,
+        response: error.response?.data,
+        request: {
+          url: error.config?.url,
+          method: error.config?.method,
+          headers: error.config?.headers,
+          data: error.config?.data
+        }
+      });
+      setError(error.response?.data?.error || error.message || 'Search failed');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,15 +108,22 @@ const ChallengeTwoScreen: React.FC<ChallengeTwoScreenProps> = ({
         </Text>
 
         <View style={styles.searchContainer}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search..."
-            value={searchQuery}
-            onChangeText={(text) => {
-              setSearchQuery(text);
-              checkAdminAccess(text);
-            }}
-          />
+          <View style={styles.searchInputContainer}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Type here to search..."
+              placeholderTextColor="#666"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            <TouchableOpacity 
+              style={styles.searchButton}
+              onPress={handleSearch}
+            >
+              <Text style={styles.searchButtonText}>Search</Text>
+            </TouchableOpacity>
+          </View>
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
         </View>
 
         {loading && <LoadingSpinner size="small" />}
@@ -90,13 +156,55 @@ const styles = StyleSheet.create({
   searchContainer: {
     width: '100%',
     marginBottom: 20,
+    paddingHorizontal: 20,
+  },
+  searchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   searchInput: {
+    flex: 1,
     backgroundColor: '#fff',
     padding: 15,
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
+    borderWidth: 2,
+    borderColor: '#007AFF',
+    fontSize: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  searchButton: {
+    backgroundColor: '#007AFF',
+    padding: 15,
+    borderRadius: 8,
+    minWidth: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  searchButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  errorText: {
+    color: '#ff3b30',
+    marginTop: 10,
+    textAlign: 'center',
   },
 });
 

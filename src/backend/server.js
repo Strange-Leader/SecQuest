@@ -53,17 +53,26 @@ app.use(
 app.use(morgan('dev'));
 app.use(
   cors({
-    origin: '*', // Allow all origins for development
+    origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Admin-Token', 'X-User-Role', 'Accept'],
+    credentials: false
   }),
 );
 
 // Create HTTP server instead of HTTPS
 const server = http.createServer(app);
 
+// Add request logging
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  console.log('Headers:', req.headers);
+  next();
+});
+
 // Test endpoint for connectivity
 app.get('/test', (req, res) => {
+  console.log('Test endpoint hit from:', req.ip);
   res.json({
     message: 'Server is reachable!',
     timestamp: new Date().toISOString(),
@@ -605,6 +614,32 @@ app.post('/api/challenge4/verify-2fa', (req, res) => {
 app.get('/api/challenge4/flag', (req, res) => {
   // For demo, return a static flag
   res.json({ flag: 'CTF{CHALLENGE4_2FA_BYPASS}' });
+});
+
+// Challenge 2 - Admin Access endpoints
+app.post('/api/challenge2/admin/access', (req, res) => {
+  try {
+    const { token } = req.body;
+    const adminToken = req.headers['x-admin-token'];
+    const userRole = req.headers['x-user-role'];
+
+    // Intentionally weak validation for CTF
+    if (adminToken === 'true' && userRole === 'admin') {
+      res.json({
+        success: true,
+        message: 'Admin access granted',
+        flag: 'CTF{ADMIN_ACCESS_GRANTED}',
+        hint: 'The server trusts client-side headers for authorization. Try to intercept and modify the request!'
+      });
+    } else {
+      res.status(403).json({
+        error: 'Access denied',
+        hint: 'Try to find a way to bypass the admin check!'
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // Global error handling middleware

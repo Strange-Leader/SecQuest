@@ -17,32 +17,13 @@ import { ENCRYPTED_FLAGS, decryptFlag } from '../../utils/encryption';
 const API_BASE_URL = 'https://10.15.7.160:3000';
 
 // Hidden credentials (Base64 encoded)
-const hiddenUsername = atob('cGV0ZXJzaWRkbGVAZ21haWwuY29t'); // 'petersiddle@gmail.com'
-const hiddenPassword = atob('MXEydzNlJFI='); // '1q2w3e$R'
+const hiddenUsername = 'petersiddle@gmail.com';
+const hiddenPassword = '1q2w3e$R';
 
 const ChallengeOneScreen: React.FC<ChallengeOneProps> = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const checkServerConnection = async () => {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/health`);
-      console.log('Server health check:', response.data);
-      return true;
-    } catch (error) {
-      console.error('Server connection error:', error);
-      Alert.alert(
-        'Connection Error',
-        'Could not connect to the server. Please check:\n\n' +
-          '1. Server is running (node src/backend/server.js)\n' +
-          '2. Your phone and computer are on the same WiFi network\n' +
-          '3. The IP address is correct\n' +
-          '4. No firewall is blocking port 3000'
-      );
-      return false;
-    }
-  };
 
   const handleLogin = async () => {
     if (!username || !password) {
@@ -53,19 +34,13 @@ const ChallengeOneScreen: React.FC<ChallengeOneProps> = ({ navigation }) => {
     // Check for hardcoded credentials
     if (username === hiddenUsername && password === hiddenPassword) {
       navigation.navigate('Flag', {
-        flag: decryptFlag(ENCRYPTED_FLAGS.CHALLENGE_ONE),
+        flag: 'CTF{BASIC_AUTH_BYPASS_123}',
       });
       return;
     }
 
     setLoading(true);
     try {
-      // First, check if the server is running
-      const isConnected = await checkServerConnection();
-      if (!isConnected) {
-        return;
-      }
-
       console.log('Attempting login with:', { username, password });
       const response = await axios.post(
         `${API_BASE_URL}/api/challenge1/login`,
@@ -76,7 +51,7 @@ const ChallengeOneScreen: React.FC<ChallengeOneProps> = ({ navigation }) => {
 
       if (response.data.success) {
         navigation.navigate('Flag', {
-          flag: decryptFlag(ENCRYPTED_FLAGS.CHALLENGE_ONE),
+          flag: 'CTF{BASIC_AUTH_BYPASS_123}',
         });
       } else {
         Alert.alert(
@@ -86,15 +61,11 @@ const ChallengeOneScreen: React.FC<ChallengeOneProps> = ({ navigation }) => {
       }
     } catch (error) {
       console.error('Login error:', error);
-      if (error.response?.status === 401) {
+      const err = error as any;
+      if (err.response?.status === 401) {
         Alert.alert(
           'Invalid Credentials',
-          error.response.data.hint || 'Try to find the correct credentials!'
-        );
-      } else if (error.code === 'ECONNREFUSED') {
-        Alert.alert(
-          'Connection Error',
-          'Could not connect to the server. Make sure the server is running.'
+          err.response.data.hint || 'Try to find the correct credentials!'
         );
       } else {
         Alert.alert('Error', 'Failed to process login request');
@@ -110,6 +81,9 @@ const ChallengeOneScreen: React.FC<ChallengeOneProps> = ({ navigation }) => {
         <Text style={styles.title}>Login to Access the Flag</Text>
         <Text style={styles.description}>
           This challenge involves bypassing basic authentication. The credentials are hidden somewhere in the code. Can you find them?
+        </Text>
+        <Text style={[styles.description, { color: '#000', fontWeight: 'bold' }]}>
+          Username: {hiddenUsername}
         </Text>
 
         <TextInput

@@ -19,7 +19,7 @@ interface Log {
   message: string;
 }
 
-const FLAG_TEXT = decryptFlag(ENCRYPTED_FLAGS.CHALLENGE_THREE);
+const FLAG_TEXT = 'CTF{LOG_INJECTION_SUCCESS}';
 
 const ChallengeThreeScreen: React.FC<ChallengeThreeProps> = ({navigation}) => {
   const [input, setInput] = useState('');
