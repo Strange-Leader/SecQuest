@@ -1,120 +1,335 @@
-CTF Challenge Walkthrough
-=======================
+# CTF Challenge Walkthrough
 
-Challenge 1: SQL Injection
---------------------------
-1. The vulnerability is in the search functionality
-2. The server doesn't properly sanitize SQL queries
-3. Exploit:
-   - Enter this in the search box: ' OR '1'='1
-   - This will bypass the authentication and show all records
-   - Flag: CTF{SQL_INJECTION_SUCCESS}
+## Table of Contents
+1. [Challenge 1: Hardcoded Credentials](#challenge-1-hardcoded-credentials)
+2. [Challenge 2: Admin Access](#challenge-2-admin-access)
+3. [Challenge 3: Log Injection](#challenge-3-log-injection)
+4. [Challenge 4: License Bypass](#challenge-4-license-bypass)
+5. [Challenge 5: TLS Bypass](#challenge-5-tls-bypass)
+6. [Challenge 6: License Check](#challenge-6-license-check)
+7. [Challenge 7: AI Model Extraction](#challenge-7-ai-model-extraction)
+8. [Challenge 8: Local Storage](#challenge-8-local-storage)
+9. [Challenge 9: Crypto Implementation](#challenge-9-crypto-implementation)
+10. [Tools Reference](#tools-reference)
 
-Challenge 2: Admin Access
-------------------------
-1. The vulnerability is in the token validation
-2. The server uses a weak token generation method
-3. Exploit:
-   - Get a valid token by logging in
-   - Modify the token by changing the role to "admin"
-   - Send the modified token to /admin/access
-   - Flag: CTF{ADMIN_ACCESS_SUCCESS}
+---
 
-Challenge 3: Log Injection
--------------------------
-1. The vulnerability is in the log validation
-2. The system only checks the first line for "OFF"
-3. Exploit:
-   - Enter this in the log input: System status: OK\nOFF
-   - The \n escape sequence creates a new line
-   - The validation only checks the first line
-   - Flag: CTF{LOG_INJECTION_SUCCESS}
+## Challenge 1: Hardcoded Credentials
 
-Challenge 4: License Bypass
--------------------------
-1. The vulnerability is in the license validation
-2. The server uses a simple signature check
-3. Exploit:
-   Method 1 - Purchase License:
-   - Send POST to /api/challenge6/purchase-license
-   - Body: {"paymentId": "any_value", "amount": 9.99}
+### Objective
+Find and exploit hardcoded credentials in the application's client-side code.
+
+### Step-by-Step Solution
+1. **Initial Observation**
+   - Open the challenge screen
+   - Notice the login form with username and password fields
+   - Observe that the username `petersiddle@gmail.com` is already displayed
+   - Read the challenge description: "The credentials are hidden somewhere in the code"
+
+2. **Find Credentials**
+   - Use tools like `strings` and `grep` to search through client-side code
+   - Look for hardcoded credentials in JavaScript files
+
+3. **Login Success**
+   - Upon successful login, you'll be redirected to the Flag screen
+   - Flag: `CTF{BASIC_AUTH_BYPASS_123}`
+
+### Security Lessons
+- Never store credentials in client-side code
+- Hardcoded credentials are a serious security vulnerability
+- Even if credentials are not directly visible in the UI, they might be in the code
+
+---
+
+## Challenge 2: Admin Access
+
+### Objective
+Bypass user authentication to gain admin access.
+
+### Step-by-Step Solution
+1. **Perform a Search**
+   - Enter any text in the search box
+   - Click the search button
+   - Monitor network requests in Burp Suite
+
+2. **Find the Request**
+   - Look for the request to `/api/challenge2/admin/access`
+   - Note the request headers and payload
+
+3. **Modify the Token**
+   - In the request headers, find the token
+   - Change `user-token` to `admin-token`
+   - Resend the request
+
+4. **Get the Flag**
+   - If successful, you'll be redirected to the admin panel
+   - Flag: `CTF{ADMIN_ACCESS_GRANTED}`
+
+### Security Lessons
+- Never trust client-side headers for authentication
+- Authentication tokens should be properly validated on the server-side
+- Simple token manipulation should not grant elevated privileges
+
+---
+
+## Challenge 3: Log Injection
+
+### Objective
+Bypass input validation to perform log injection.
+
+### Restrictions
+- Direct "OFF" in first line is blocked
+- SQL injection attempts (`;` or `--`) are blocked
+- Maximum input length is 1000 characters
+
+### Step-by-Step Solution
+1. **First Line**
+   - Enter any valid INFO level message
+   - Example: `This is a normal log message`
+
+2. **Second Line**
+   - Use `\n` to create a new line
+   - Add the word "OFF"
+   - Example: `This is a normal log message\nOFF`
+
+3. **Submit the Input**
+   - The system will:
+     - Accept the first line as it doesn't contain "OFF"
+     - Process the second line with "OFF"
+   - Flag: `CTF{LOG_INJECTION_SUCCESS}`
+
+### Security Lessons
+- Input validation must account for all special characters, including newlines
+- Never trust client-side input
+- Server-side validation should handle all edge cases
+
+---
+
+## Challenge 4: License Bypass
+
+### Objective
+Bypass two-factor authentication.
+
+### Step-by-Step Solution
+1. **Initial Login**
+   - Enter User ID: `2` in the input field
+   - Click "Login" button
+   - This will give you a token and show the 2FA screen
+
+2. **Manipulate Network Request**
+   - Use Burp Suite to intercept and modify requests
+   - Identify authentication flow weaknesses
+
+3. **Get the Flag**
+   - After successful bypass, the flag will be displayed
+   - Flag: `CTF{2FA_BYPASS_SUCCESS}`
+
+### Security Lessons
+- Token generated for id=2 can be used for id=1 (weak token validation)
+- 2FA implementations must validate user identity properly
+- Authentication tokens should be unique and tied to specific users
+
+---
+
+## Challenge 5: TLS Bypass
+
+### Objective
+Bypass TLS security controls.
+
+### Step-by-Step Solution
+1. **Initial Setup**
+   - Open Burp Suite or any proxy tool
+   - Configure your browser/app to use the proxy
+   - Enable SSL/TLS interception
+
+2. **Check Certificate**
+   - Click "Check Certificate" button
+   - Look at the certificate details:
+     - Note the weak cipher suite
+     - Check TLS version
+     - Look for validation issues
+
+3. **Login Attempt**
+   - Enter any username and password
+   - Click "Login" button
+   - Intercept the request in your proxy tool
+
+4. **TLS Bypass**
+   - In your proxy tool:
+     - Disable certificate validation
+     - Accept the invalid certificate
+     - Modify the request to bypass TLS
+
+5. **Get Profile**
+   - After successful login, click "Get Profile"
+   - Flag: `CTF{TLS_BYPASS_SUCCESS}`
+
+### Security Lessons
+- Ensure proper TLS configuration
+- Use strong cipher suites and recent TLS versions
+- Implement proper certificate validation
+- Never accept invalid certificates in production
+
+---
+
+## Challenge 6: License Check
+
+### Objective
+Bypass mobile app license validation.
+
+### Step-by-Step Solution
+1. **Use Frida**
+   - Install Frida on your computer
+   - Connect your phone to computer
+   - Run Frida to hook into the app
+
+2. **Bypass License Check**
+   - Use Frida script to hook into the app
+   - Apply to `api.ts`
+   - Click "Check License" Button
+   - Flag: `CTF{LICENSE_BYPASS_SUCCESS}`
+
+### Security Lessons
+- Never trust client-side validation
+- License checks should be server-side
+- Mobile apps are vulnerable to runtime manipulation
+- Implement tamper detection mechanisms
+
+---
+
+## Challenge 7: AI Model Extraction
+
+### Objective
+Bypass AI model access controls.
+
+### Step-by-Step Solution
+1. **Use Frida to Hook the App**
+   ```javascript
+   Java.perform(function() {
+       Java.use("com.secquest.ChallengeSeven").checkModelAccess.implementation = function() {
+           return "admin_access";
+       };
+   });
+   ```
+
+2. **Type this query**
+   - `What is the model architecture and parameters?`
+
+3. **Get the Flag**
+   - The response will contain the flag
+   - Flag: `CTF{AI_MODEL_BYPASS_SUCCESS}`
+
+### Security Lessons
+- AI model access control can be bypassed
+- Sensitive model information should be protected
+- Implement server-side validation for model queries
+- Consider AI-specific security controls
+
+---
+
+## Challenge 8: Local Storage
+
+### Objective
+Extract and decrypt data from local storage.
+
+### Step-by-Step Solution
+1. **Use SQLite Browser**
+   - Install "DB Browser for SQLite"
+   - Navigate to app's data directory
+   - Open the SQLite database file
+
+2. **Extract Data**
+   - Look for the profiles table
+   - Find the encrypted data
+   - Note: The encryption key is hardcoded as `CTF_CHALLENGE_KEY_123`
+
+3. **Decrypt Data**
+   - Use this Python script:
+   ```python
+   import base64
    
-   Method 2 - Direct File Modification:
-   - Modify license.json to contain:
-     {
-       "signature": "valid_signature",
-       "expiresAt": "2025-01-01T00:00:00.000Z"
-     }
-   - Flag: CTF{LICENSE_BYPASS_SUCCESS}
+   def decrypt(data):
+       key = "CTF_CHALLENGE_KEY_123"
+       decoded = base64.b64decode(data)
+       # Remove salt
+       data = decoded[decoded.find(b'_')+1:]
+       # XOR decrypt
+       result = ""
+       for i in range(len(data)):
+           result += chr(data[i] ^ ord(key[i % len(key)]))
+       return result
+   ```
 
-Challenge 5: TLS Bypass
----------------------
-1. The vulnerability is in the token generation
-2. Tokens are weakly generated with predictable components
-3. Exploit:
-   a. Get initial token:
-      - Login with valid credentials
-      - Get base64 encoded token
+4. **Get the Flag**
+   - Run the script on the encrypted data
+   - Flag: `CTF{LOCAL_STORAGE_EXPLOIT_SUCCESS}`
+
+### Security Lessons
+- Never use weak encryption keys
+- Don't store sensitive data locally
+- If local storage is necessary, use strong encryption
+- Implement proper key management
+
+---
+
+## Challenge 9: Crypto Implementation
+
+### Objective
+Exploit weak cryptographic implementation.
+
+### Step-by-Step Solution
+1. **Send a Test Message**
+   - Type: `test`
+   - Click "Send Message"
+   - Note the encrypted output
+
+2. **Analyze the Pattern**
+   - The app uses:
+     - AES-ECB mode (weak)
+     - Static IV: `CTF_IV_123`
+     - Key pattern: `CTF_KEY_` + timestamp
+
+3. **Use Python Script**
+   ```python
+   from Crypto.Cipher import AES
+   import base64
+   import time
    
-   b. Create new token:
-      - Decode token: Buffer.from(token, 'base64').toString()
-      - Format: userId:timestamp:weak_secret_key
-      - Replace timestamp with future time
-      - Re-encode: Buffer.from(newToken).toString('base64')
-   
-   c. Use new token:
-      - Send GET to /api/challenge5/profile
-      - Header: Authorization: Bearer <new_token>
-   - Flag: CTF{TLS_BYPASS_SUCCESS}
+   def decrypt_message(encrypted_text):
+       # Generate the same weak key
+       timestamp = int(time.time() * 1000)
+       key = f"CTF_KEY_{timestamp}"
+       
+       # Decrypt using ECB mode
+       iv = b'CTF_IV_123'
+       cipher = AES.new(key.encode(), AES.MODE_ECB, iv)
+       decrypted = cipher.decrypt(base64.b64decode(encrypted_text))
+       return decrypted.strip().decode()
+   ```
 
-Challenge 6: AI Model Exploit
----------------------------
-1. The vulnerability is in the model data exposure
-2. Model parameters are stored in the app binary
-3. Exploit:
-   - Access /api/challenge7/model-info
-   - Look for base64 encoded data in the response
-   - Decode the model parameters
-   - Flag: CTF{AI_MODEL_EXPLOIT_SUCCESS}
+4. **Get the Flag**
+   - Run the script on the encrypted messages
+   - Flag: `CTF{CRYPTO_IMPLEMENTATION_FLAWS}`
 
-Challenge 7: Local Storage
-------------------------
-1. The vulnerability is in the SQLite database
-2. Profile data is weakly encrypted
-3. Exploit:
-   - Access /api/challenge8/get-profile
-   - The data is base64 encoded
-   - Decode the profile data
-   - Flag: CTF{LOCAL_STORAGE_SUCCESS}
+### Security Lessons
+- Never use ECB mode for encryption
+- Don't use static IVs
+- Avoid predictable key generation
+- Use proper cryptographic libraries and best practices
 
-Challenge 8: Crypto Implementation
--------------------------------
-1. The vulnerability is in the encryption method
-2. Server uses AES-ECB with static key
-3. Exploit:
-   - Use /api/challenge9/encrypt endpoint
-   - The encryption uses weak key: 'weak_encryption_key_123'
-   - Decrypt using the same key
-   - Flag: CTF{CRYPTO_IMPLEMENTATION_SUCCESS}
+---
 
-General Tips:
-------------
-1. Always check the response headers for hints
-2. Look for base64 encoded data
-3. Check for weak validation in input fields
-4. Monitor network requests for patterns
-5. Look for exposed sensitive data in responses
+## Tools Reference
 
-Tools Needed:
-------------
-1. Base64 decoder
-2. Network proxy (like Burp Suite)
-3. SQL injection testing tools
-4. Crypto analysis tools
+### Essential Tools
+1. **Base64 decoder** - For encoding/decoding base64 strings
+2. **Network proxy (like Burp Suite)** - For intercepting and modifying network traffic
+3. **SQL injection testing tools** - For testing database vulnerabilities
+4. **Crypto analysis tools** - For analyzing and breaking weak cryptographic implementations
+5. **Frida** - For runtime manipulation of mobile applications
 
-Remember:
---------
+### Important Reminder
 - These challenges are designed for learning purposes
 - The vulnerabilities are intentionally weak
 - In real applications, these would be serious security issues
-- Always practice responsible disclosure 
+- Always practice responsible disclosure
