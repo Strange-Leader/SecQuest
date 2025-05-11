@@ -1,3 +1,68 @@
+# SecQuest - Mobile Security CTF
+
+A collection of mobile security challenges designed to teach various aspects of mobile application security through hands-on practice.
+
+## Challenges Overview
+
+### Challenge 1: Basic Authentication Bypass
+- **Goal**: Bypass basic authentication
+- **Learning**: Client-side security, hardcoded credentials
+- **Solution**: Find hardcoded credentials in the code
+- **Flag**: `CTF{BASIC_AUTH_BYPASS_123}`
+
+### Challenge 2: Token Manipulation
+- **Goal**: Bypass admin access control
+- **Learning**: Token-based authentication, client-side validation
+- **Solution**: Modify the token from `user-token` to `admin-token`
+- **Flag**: `CTF{ADMIN_ACCESS_GRANTED}`
+
+### Challenge 3: Log Injection
+- **Goal**: Inject malicious log entries
+- **Learning**: Input validation, log injection
+- **Solution**: Use newline characters to bypass validation
+- **Flag**: `CTF{LOG_INJECTION_SUCCESS}`
+
+### Challenge 4: 2FA Bypass
+- **Goal**: Bypass two-factor authentication
+- **Learning**: 2FA security, backup codes
+- **Solution**: Use backup codes or bypass token validation
+- **Flag**: `CTF{2FA_BYPASS_SUCCESS}`
+
+### Challenge 5: TLS Bypass
+- **Goal**: Bypass TLS security
+- **Learning**: SSL/TLS security, certificate validation
+- **Solution**: Intercept and modify traffic
+- **Flag**: `CTF{TLS_BYPASS_SUCCESS}`
+
+### Challenge 6: License Bypass
+- **Goal**: Bypass license validation
+- **Learning**: Client-side validation, encryption
+- **Solution**: Use hardcoded key "CHANGEME"
+- **Flag**: `CTF{LICENSE_BYPASS_SUCCESS}`
+
+### Challenge 7: AI Model Security
+- **Goal**: Bypass AI model access control
+- **Learning**: AI security, access control
+- **Solution**: Modify access headers
+- **Flag**: `CTF{AI_MODEL_BYPASS_SUCCESS}`
+
+### Challenge 8: Local Storage Exploit
+- **Goal**: Extract data from local storage
+- **Learning**: Local storage security, encryption
+- **Solution**: Use weak encryption key
+- **Flag**: `CTF{LOCAL_STORAGE_EXPLOIT_SUCCESS}`
+
+### Challenge 9: Crypto Implementation
+- **Goal**: Break weak encryption
+- **Learning**: Cryptography, encryption flaws
+- **Solution**: Exploit ECB mode and static IV
+- **Flag**: `CTF{CRYPTO_IMPLEMENTATION_FLAWS}`
+
+## Detailed Walkthrough
+For detailed step-by-step solutions and explanations for each challenge, please refer to the `CTF Challenge Walkthrough.txt` file in the project root directory.
+
+## Setup Instructions
+
 This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
 
 # Getting Started
