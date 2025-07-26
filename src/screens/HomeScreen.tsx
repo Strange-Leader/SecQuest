@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   description: {
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: 'rgba(255, 255, 255, 0.7)', //reduced opacity
     fontSize: 14,
   },
 });
